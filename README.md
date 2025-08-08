@@ -1,2 +1,5 @@
-# 2024-2_ESD_Project2
-경희대학교 2024-2학기 임베디드 시스템 설계 프로젝트2
+<p align="center">
+  <h1 align="center">식당관리시스템 - 모순(Mosoon)✨</h1>
+</p>
+
+(코드 수정중)
