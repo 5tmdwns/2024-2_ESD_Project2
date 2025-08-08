@@ -1,0 +1,3 @@
+../Core/Src/stuffManage.c:11:13:stuffToString	16	static
+../Core/Src/stuffManage.c:49:6:transmitString	16	static
+../Core/Src/stuffManage.c:55:6:printRemainingStuff	72	static
