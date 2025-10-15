@@ -1,5 +1,5 @@
 <p align="center">
-  <h1 align="center">식당관리시스템 - 모순(Mosoon)✨</h1>
+  <h1 align="center">FreeRTOS 기반 식당관리 시스템(모순 MOSOON)✨</h1>
 </p>
 
-(코드 수정중)
+(작성 예정)
