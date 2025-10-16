@@ -953,8 +953,8 @@ print(f" {output_file} save!")
 ```
 
 ## 6. 시연영상
-### [입장](#https://drive.google.com/file/d/1NTCRfR3sXfr2LmJT8r22jeOMRN_iNV_2/view?usp=sharing)
-### [QR서버홈](#https://drive.google.com/file/d/1gZuGmhyukw768nXnn1dyceuLz3geT0pV/view?usp=sharing)
-### [QR서버메뉴](#https://drive.google.com/file/d/1QcCQY33HyL5IlGx7LmlhcJpJos2wTtdM/view?usp=sharing_
-### [주방 타이머 1](#https://drive.google.com/file/d/1d9EcNRx9hgoyCosS8EqPOA8HVtiw9l-P/view?usp=sharing)
-### [주방 타이머 2](#https://drive.google.com/file/d/1aASdzvGTf2WcpOVzPhBbp_Wvt3CHuEjN/view?usp=sharing)
+- [입장](https://drive.google.com/file/d/1NTCRfR3sXfr2LmJT8r22jeOMRN_iNV_2/view?usp=sharing)
+- [QR서버홈](https://drive.google.com/file/d/1gZuGmhyukw768nXnn1dyceuLz3geT0pV/view?usp=sharing)
+- [QR서버메뉴](#https://drive.google.com/file/d/1QcCQY33HyL5IlGx7LmlhcJpJos2wTtdM/view?usp=sharing_
+- [주방 타이머 1](#https://drive.google.com/file/d/1d9EcNRx9hgoyCosS8EqPOA8HVtiw9l-P/view?usp=sharing)
+- [주방 타이머 2](#https://drive.google.com/file/d/1aASdzvGTf2WcpOVzPhBbp_Wvt3CHuEjN/view?usp=sharing)
