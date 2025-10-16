@@ -212,7 +212,8 @@
   
 ## 4. SPI 4-wire Interface TFT IPS LCD모듈(ST7789)
 
-&nbsp;**사용 이유** : 기존의 제공받은 OLED로 손님들이 대접받는 코스별 요리의 사진을 표현하고자 한계가 있어, 손님들에게 코스 요리에 대한 정보를 제공하고자 SPI 4-wire Interface 통신을 지원하는 TFT IPS LCD모듈을 사용하게 되었습니다. <br/>
+### 사용 이유
+&nbsp;기존의 제공받은 OLED로 손님들이 대접받는 코스별 요리의 사진을 표현하고자 한계가 있어, 손님들에게 코스 요리에 대한 정보를 제공하고자 SPI 4-wire Interface 통신을 지원하는 TFT IPS LCD모듈을 사용하게 되었습니다. <br/>
 
 <table>
   <tr>
@@ -235,4 +236,11 @@
       </table>
 </table>
 
+### SPI Timing Digaram
 
+<p align="center" style="margin: 20px 0;">
+  <img width="49%" alt="Serial Interface Characteristics" src="https://github.com/user-attachments/assets/6bdc68a2-4a06-49f2-916e-b890cab54dac" />
+  <img width="49%" alt="4-line Serial Interface Write Protocol" src="https://github.com/user-attachments/assets/fb21f1ff-2e7d-4ba7-ada7-1720e312774a" />
+</p>
+
+Clock Polarity는 0(`SCL` 비활성화 상태에서 LOW 유지), Clock Polarity는 0 (SCL 비활성화 상태에서 LOW 유지)
