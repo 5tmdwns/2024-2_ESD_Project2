@@ -214,54 +214,25 @@
 
 &nbsp;**사용 이유** : 기존의 제공받은 OLED로 손님들이 대접받는 코스별 요리의 사진을 표현하고자 한계가 있어, 손님들에게 코스 요리에 대한 정보를 제공하고자 SPI 4-wire Interface 통신을 지원하는 TFT IPS LCD모듈을 사용하게 되었습니다. <br/>
 
-<table align="center">
-  <tr>
-    <td align="center"><img width="50%" alt="TFT IPS LCD 모듈 사진" src="https://github.com/user-attachments/assets/4f2624b4-5e9d-4325-b61a-b280446c8b56" /></td>
-  </tr>
-  <tr>
-    <td align="center">모델명: ZJY169S0800TG01</td>
-  </tr>
-</table>
-
 <table>
   <tr>
-    <th>해상도</th>
-    <td>240x280</td>
-  </tr>
-  <tr>
-    <th>입력 전압</th>
-    <td>3.3V(2.5~3.3V)</td>
-  </tr>
-  <tr>
-    <th>드라이버 IC</th>
-    <td>ST7789V2</td>
-  </tr>
-  <tr>
-    <th>인터페이스</th>
-    <td>4-wire SPI</td>
-  </tr>
-  <tr>
-    <th>백라이트</th>
-    <td>3 Chip-White LED</td>
-  </tr>
-  <tr>
-    <th>휘도</th>
-    <td>480 Cd/m2(TYP)</td>
-  </tr>
-  <tr>
-    <th>색상</th>
-    <td>262K</td>
-  </tr>
-  <tr>
-    <th>크기</th>
-    <td>31mm x 48mm</td>
-  </tr>
-  <tr>
-    <th>동작온도</th>
-    <td>-20~70도</td>
-  </tr>
-  <tr>
-    <th>보관온도</th>
-    <td>-30~80도</td>
-  </tr>
+    <td align="center" width="70%">
+      <img width="50%" alt="TFT IPS LCD 모듈 사진" src="https://github.com/user-attachments/assets/4f2624b4-5e9d-4325-b61a-b280446c8b56" />
+      <sub><strong>모델명: ZJY169S0800TG01</strong></sub>
+    </td>
+    <td width="30%">
+      <table>
+          <tr><th>해상도</th><td>240x280</td></tr>
+          <tr><th>입력 전압</th><td>3.3V(2.5~3.3V)</td></tr>
+          <tr><th>드라이버 IC</th><td>ST7789V2</td></tr>
+          <tr><th>인터페이스</th><td>4-wire SPI</td></tr>
+          <tr><th>백라이트</th><td>3 Chip-White LED</td></tr>
+          <tr><th>휘도</th><td>480 Cd/m2(TYP)</td></tr>
+          <tr><th>색상</th><td>262K</td></tr>
+          <tr><th>크기</th><td>31mm x 48mm</td></tr>
+          <tr><th>동작온도</th><td>-20~70도</td></tr>
+          <tr><th>보관온도</th><td>-30~80도</td></tr>
+      </table>
 </table>
+
+
