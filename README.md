@@ -139,7 +139,7 @@
 ### 3-1. Information(STM32)
 
 <p align="center" style="margin: 20px 0;">
-  <img width="60%" alt="Information Circuit Image" src="https://github.com/user-attachments/assets/a0d6e0ac-30b2-4ea2-abd5-774e2565c644" />
+  <img width="90%" alt="Information Circuit Image" src="https://github.com/user-attachments/assets/a0d6e0ac-30b2-4ea2-abd5-774e2565c644" />
 </p>
 
 &nbsp;**SPI 통신** <br/>
@@ -150,7 +150,7 @@
 ### 3-2. 객실(STM32)
 
 <p align="center" style="margin: 20px 0;">
-  <img width="60%" alt="객실 Circuit Image" src="https://github.com/user-attachments/assets/5887c934-c959-41f5-97f4-aca9bde8861e" />
+  <img width="90%" alt="객실 Circuit Image" src="https://github.com/user-attachments/assets/5887c934-c959-41f5-97f4-aca9bde8861e" />
 </p>
 
 
@@ -163,7 +163,7 @@
 ### 3-3. 주방(STM32)
 
 <p align="center" style="margin: 20px 0;">
-  <img width="60%" alt="주방 Circuit Image" src="https://github.com/user-attachments/assets/b6ae1c15-a1fb-46ca-a82c-6fdae070cec8" />
+  <img width="90%" alt="주방 Circuit Image" src="https://github.com/user-attachments/assets/b6ae1c15-a1fb-46ca-a82c-6fdae070cec8" />
 </p>
 
 &nbsp;**SPI 통신** <br/>
@@ -190,7 +190,7 @@
 ### 3-5. 전체 회로도
 
 <p align="center" style="margin: 20px 0;">
-  <img width="60%" alt="전체 회로도 Image" src="https://github.com/user-attachments/assets/e0dcad6b-d163-4360-a4df-b87c74bcf474" />
+  <img width="90%" alt="전체 회로도 Image" src="https://github.com/user-attachments/assets/e0dcad6b-d163-4360-a4df-b87c74bcf474" />
 </p>
 
 &nbsp;**Information(STM32)** <br/>
@@ -257,7 +257,7 @@
 &nbsp;데이터 전송이 완료된 이후엔 `C/S` 라인을 다시 HIGH로 설정합니다. (이는 SPI의 `SS`) <br/>
 
 <p align="center" style="margin: 20px 0;">
-  <img width="60%" alt="4-line Serial Interface Characteristics" src="https://github.com/user-attachments/assets/91613869-a212-4231-a9ea-a11fc45b001f" />
+  <img width="90%" alt="4-line Serial Interface Characteristics" src="https://github.com/user-attachments/assets/91613869-a212-4231-a9ea-a11fc45b001f" />
 </p>
 
 &nbsp;ST7789에 데이터를 쓸 때는 SCL의 주기가 최소 16ns가 되어야 하고, 데이터를 읽을 때는 최소 150ns가 되어야 합니다. <br/>
@@ -701,7 +701,7 @@ buzzerTask에서 사용하는 Critical Section은 없습니다. <br/>
 라이브러리 파일은 다음과 같이 Github를 참고하여 사용하였습니다. ([라이브러리 Reference](https://github.com/Floyd-Fish/ST7789-STM32.git))
 
 <p align="center" style="margin:20px 0;">
-  <img width="60%" alt="ST7789 Library Git Source" src="https://github.com/user-attachments/assets/c2684c85-5b05-4720-b207-c39ef9429597" />
+  <img width="90%" alt="ST7789 Library Git Source" src="https://github.com/user-attachments/assets/c2684c85-5b05-4720-b207-c39ef9429597" />
 </p>
 
 ``` c
