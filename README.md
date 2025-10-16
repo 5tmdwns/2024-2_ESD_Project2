@@ -19,7 +19,7 @@
    - [3-4. 코스 사진 출력 Display(STM32)](#3-4-코스-사진-출력-displaystm32)
    - [3-5. 전체 회로도](#3-5-전체-회로도)
  - [4. SPI 4-wire Interface TFT IPS LCD모듈(ST7789)](#4-SPI-4wire-interface-tft-ips-lcd모듈st7789)
- - [5. 보드별 코드 및 통신 분석]
+ - [5. 보드별 코드 및 통신 분석](#5-보드별-코드-및-통신-분석)
    - [5-1. 주방(STM32)](#5-1-주방stm32)
    - [5-2. 코스 사진 출력 Display(STM32)](#5-2-코스-사진-출력-displaystm32)
  - [6. 시연영상]
@@ -212,7 +212,7 @@
   
 ## 4. SPI 4-wire Interface TFT IPS LCD모듈(ST7789)
 
-### 사용 이유
+### - 사용 이유
 &nbsp;기존의 제공받은 OLED로 손님들이 대접받는 코스별 요리의 사진을 표현하고자 한계가 있어, 손님들에게 코스 요리에 대한 정보를 제공하고자 SPI 4-wire Interface 통신을 지원하는 TFT IPS LCD모듈을 사용하게 되었습니다. <br/>
 
 <table>
@@ -236,11 +236,543 @@
       </table>
 </table>
 
-### SPI Timing Digaram
+### - SPI Timing Digaram
 
 <p align="center" style="margin: 20px 0;">
   <img width="49%" alt="Serial Interface Characteristics" src="https://github.com/user-attachments/assets/6bdc68a2-4a06-49f2-916e-b890cab54dac" />
   <img width="49%" alt="4-line Serial Interface Write Protocol" src="https://github.com/user-attachments/assets/fb21f1ff-2e7d-4ba7-ada7-1720e312774a" />
 </p>
 
-Clock Polarity는 0(`SCL` 비활성화 상태에서 LOW 유지), Clock Polarity는 0 (SCL 비활성화 상태에서 LOW 유지)
+&nbsp;Clock Polarity는 0(`SCL` 비활성화 상태에서 LOW 유지), Clock Phase는 0 `SCL` 첫번째 엣지에서 데이터를 채가고, 두번째 엣지에서 출력합니다. <br/>
+`CPOL` = 0, `CPHA` = 0 이므로 `SCL`의 Rising Edged에서 `SDA` 라인의 데이터를 채가고 Falling Edge에서 데이터를 출력합니다. <br/>
+
+&nbsp;`D/C`: LOW일 때 전송되는 데이터는 명령어이고, HIGH일 때 전송되는 데이터는 명령어 레지스터에 저장될 매개변수 혹은 디스플레이 데이터 램에 저장될 RGB 데이터 배열이다. <br/>
+
+&nbsp;데이터는 8비트씩 MSB부터 전송합니다. (이후, 메모리에 저장되는 방식이 리틀 앤디안, 빅 앤디안의 차이. 이는 설정할 수 있음.) <br/>
+
+&nbsp;전송할 데이터의 종류에 따라 (명령어 = 0, 디스플레이 Data/Command 매개변수 = 1) `D/C` 라인을 설정합니다. <br/>
+
+&nbsp;`C/S` 라인이 LOW 상태가 된 후에 데이터 전송이 반드시 이루어져야만 합니다. <br/>
+
+&nbsp;데이터 전송이 완료된 이후엔 `C/S` 라인을 다시 HIGH로 설정합니다. (이는 SPI의 `SS`) <br/>
+
+<p align="center" style="margin: 20px 0;">
+  <img width="60%" alt="4-line Serial Interface Characteristics" src="https://github.com/user-attachments/assets/91613869-a212-4231-a9ea-a11fc45b001f" />
+</p>
+
+&nbsp;ST7789에 데이터를 쓸 때는 SCL의 주기가 최소 16ns가 되어야 하고, 데이터를 읽을 때는 최소 150ns가 되어야 합니다. <br/>
+
+## 5. 보드별 코드 및 통신 분석
+### 5-1. 주방(STM32)
+> **해당 프로젝트에서는 `주방(STM32)`, `코스 사진 출력 Display(STM32)` 보드 개발 역할을 맡았습니다.** <br/>
+> **5. 보드별 코드 및 통신 분석에서는 해당 보드에 대한 설명만 있습니다.** <br/>
+> **또한, Source 코드도 해당 보드에 대한 코드만 있습니다.** <br/>
+
+#### - Task 간단 정보
+&nbsp;해당 STM32에서의 FreeRTOS의 Task는 다음과 같습니다. <br/>
+
+| **Task Priority** | **Task** | **Execution** |
+|:---:|:---:|:---:|
+| 3 | `copyTask` | 받은 데이터 공유자원으로 복사|
+| 2 | `cookTask` | 재료관리 및 요리시작 |
+| 1 | `lcdTask` | 재료 및 타이머 LCD 동작 |
+| 1 | `buzzerTask` | 요리 완료 후 동작 |
+
+#### - Critical Section
+&nbsp;공유자원은 다음과 같습니다.
+
+``` c
+...
+typedef struct {
+	uint8_t courseData [5][2];
+	uint8_t changeCourse [3];
+} user_data;
+/* USER CODE END PTD */
+...
+```
+
+&nbsp;위는 구조체 배열로 식당의 코스별 요리 정보와 주방에서 그 코스에 만드는데 걸리는 시간이 담겨있습니다. <br/>
+위 구조체 배열은 3개의 Task가 접근을 하며, Critical Section입니다. <br/>
+
+#### - 동작 Flow
+
+``` c
+...
+enum cuisine {
+	SmallBites = 31,
+	AlmondWithCavior, //서브1
+	SnowCrabAndPickledChrysanthemum, //서브1 대체1
+	AblaloneTaco, //서브1 대체2
+	HearthOvenGrilledHanwoo, //메인
+	EmberToastedAcornNoodle, //메인 대체1
+	BlackSesameSeaurchinNasturtium, //메인 대체2
+	BurdockTarteTatinWithSkinJuice, //서브2
+	TilefishMustardBrassica, //서브2 대체1
+	fattyTuna, //서브2 대체2
+	SmallSweets
+} cuisine;
+...
+```
+
+&nbsp;`enum` 배열로 선언한 각 코스의 이름을 선언하였습니다. <br/>
+기본 에피타이저 - 서브1 - 메인 - 서브2 - 후식순으로 코스가 진행되는데 서브1, 메인, 서브2는 대체가 2가지가 있어 이는 STM2에서 받는 데이터의 정보를 통하여 수정하여 다시 구조체 배열로 `copyTask`로 인해 저장하게 됩니다. <br/>
+
+``` c
+...
+void dataInit()
+{
+	for (int i = 0; i < 4; i ++)
+	{
+		userData[i].courseData[0][0] = SmallBites;
+		userData[i].courseData[0][1] = 5;
+		userData[i].courseData[1][0] = AlmondWithCavior;
+		userData[i].courseData[1][1] = 10;
+		userData[i].courseData[2][0] = HearthOvenGrilledHanwoo;
+		userData[i].courseData[2][1] = 15;
+		userData[i].courseData[3][0] = BurdockTarteTatinWithSkinJuice;
+		userData[i].courseData[3][1] = 10;
+		userData[i].courseData[4][0] = SmallSweets;
+		userData[i].courseData[4][1] = 15;
+	}
+	memset(remainingStuff, 50, sizeof(remainingStuff));
+}
+...
+```
+
+&nbsp;처음 Critical Section을 `enum`의 기본 코스로 저장하는 과정이다. 이는 `int main`안에(While 밖)에 선언함으로써, 한번 초기화하게 합니다. <br/>
+
+``` c
+...
+HAL_SPI_Receive_IT(&hspi1, rxBuffer, sizeof(rxBuffer));
+  /* USER CODE END 2 */
+
+  /* USER CODE BEGIN RTOS_MUTEX */
+  /* add mutexes, ... */
+  /* USER CODE END RTOS_MUTEX */
+
+  /* USER CODE BEGIN RTOS_SEMAPHORES */
+  /* add semaphores, ... */
+  spiSem = xSemaphoreCreateBinary();
+  cookSem = xSemaphoreCreateBinary();
+  lcdSem = xSemaphoreCreateBinary();
+  /* USER CODE END RTOS_SEMAPHORES */
+...
+```
+
+&nbsp;인터럽트 수신대기와 BinarySemaphore의 3가지 선언입니다. <br/>
+이는 주방에서 행해지는 작업이 순차적으로 진행됨으로, Semaphore로 3가지 테스크의 시행을 순차적으로 진행시키기 위해 선언하였습니다. <br/>
+
+``` c
+...
+  /* start timers, add new ones, ... */
+  userTimerHandler = xTimerCreate("userTimer", pdMS_TO_TICKS(1000), pdTRUE, NULL, updateUserTimer);
+  /* USER CODE END RTOS_TIMERS */
+
+  /* USER CODE BEGIN RTOS_QUEUES */
+  /* add queues, ... */
+  /* USER CODE END RTOS_QUEUES */
+
+  /* Create the thread(s) */
+  /* definition and creation of deaultTask */
+
+  /* USER CODE BEGIN RTOS_THREADS */
+  xTaskCreate(copyTask, "spiTask", 128, NULL, 3, &copyHandler);
+  xTaskCreate(cookTask, "cookTask", 128, NULL, 2, &cookHandler);
+  xTaskCreate(lcdTask, "lcdTask", 128, NULL, 1, &lcdHandler);
+  xTaskCreate(buzzerTask, "buzzerTask", 128, NULL, 1, &buzzerHandler);
+
+  /* add threads, ... */
+...
+```
+
+&nbsp;주방에서 다음 요리가 나오기 위한 시간을 LCD로 출력하기 위한 `S/W Timer Handler`를 선언하였다. <br/>
+이는 Priode Timer로 `1000pdMS_TICK`간격으로 `xTimerStop`을 선언하기 전까지 시행된다. <br/>
+
+``` c
+...
+void HAL_SPI_RxCpltCallback(SPI_HandleTypeDef *hspi)
+{
+	if (hspi -> Instance == SPI1)
+	{
+		startSig = true;
+		lcdState = true;
+		//UART_Print("SPI rxBuffer Received!\r\n");
+		BaseType_t xHigherPriorityTaskWoken = pdFALSE;
+		for (int i = 0; i < 5; i ++)
+			rxBuffer[i] = rxBuffer[i] - '0';
+		HAL_SPI_Receive_IT(&hspi1, rxBuffer, sizeof(rxBuffer));
+		xSemaphoreGiveFromISR(spiSem, &xHigherPriorityTaskWoken);
+		//UART_Print("SPI_ISR spiSem Give!\r\n");
+		portYIELD_FROM_ISR(xHigherPriorityTaskWoken);
+	}
+}
+...
+```
+
+&nbsp;SPI Interrupt 수신으로 버퍼에 데이터를 저장하는 과정이다. 여기서 `‘0’`을 하는 이유는 전달 받는 데이터가 아스키코드로 `‘0’`, `‘1’`, `‘2’`를 각 배열에 전달을 받기 때문에, 이를 현 코드에서의 데이터로 가공시키기 위함입니다. <br/>
+또한, `spiSem`을 Give함으로 `copyTask`가 동작하도록 합니다. <br/>
+
+``` c
+...
+void copyTask(void *argument)
+{
+	while(1)
+	{
+		// UART_Print("copyTask excution!\r\n");
+		if(xSemaphoreTake(spiSem, portMAX_DELAY) == pdTRUE)
+		{
+			//UART_Print("copyTask spiSem Take!\r\n");
+			memcpy(&whatCourse, &rxBuffer[0], sizeof(rxBuffer[0]));
+			switch (whatCourse)
+				{
+				case 1 :
+					for (int i = 0; i < 4; i ++)
+						memcpy(&userData[i].changeCourse[0], &rxBuffer[i + 1], 1);
+					break;
+				case 2 :
+					for (int i = 0; i < 4; i ++)
+						memcpy(&userData[i].changeCourse[1], &rxBuffer[i + 1], 1);
+					break;
+				case 3 :
+					for (int i = 0; i < 4; i ++)
+						memcpy(&userData[i].changeCourse[2], &rxBuffer[i + 1], 1);
+					break;
+				}
+			xSemaphoreGive(cookSem);
+			//UART_Print("copyTask cookSem Give!\r\n");
+		}
+		vTaskDelay(500);
+	}
+}
+...
+```
+
+&nbsp;copyTask에서는 STM2에서 전달받은 데이터를 Critical Section으로 복사하는 작업을 시행합니다. <br/>
+여기서 인터럽트가 걸리지 않았으면, `spiSem`의 Take가 불가하므로 시행이 되지 않습니다. <br/>
+따라서, 전달받는 데이터가 없을 시, Critical Section으로의 접근은 불가합니다. <br/>
+`copyTask`가 진행되었을 시, `cookSem`을 Give함으로써, 다음 순위인 `cookTask`가 실행되도록 합니다. <br/>
+마찬가지로, `spiSem`의 Take가 없을 시, `cookTask`도 실행되지 않습니다. <br/>
+
+``` c
+...
+void cookTask(void *argument)
+{
+	while(1)
+	{
+		if (startSig)
+		{
+			// UART_Print("cookTask (startSig == true)\r\n");
+			if (xSemaphoreTake(cookSem, portMAX_DELAY) == pdTRUE)
+			{
+				switch (whatCourse)
+				{
+				case 0 :
+					for (int i = 0; i < 6; i ++)
+						remainingStuff[i] --;
+					printRemainingStuff(Seaweed);
+					printRemainingStuff(Potato);
+					printRemainingStuff(SalmonRoe);
+					printRemainingStuff(Deodeok);
+					printRemainingStuff(Radish);
+					printRemainingStuff(RedCabbage);
+					xSemaphoreGive(lcdSem);
+					//UART_Print("cookTask lcdSem Give(whatCourse == 0)!\r\n");
+				break;
+...
+...
+				case 4 :
+					for (int i = 26; i < 30; i ++)
+						remainingStuff[i] --;
+					printRemainingStuff(Tuna);
+					printRemainingStuff(Hibiscus);
+					printRemainingStuff(Peanut);
+					printRemainingStuff(HoneyCookie);
+					printRemainingStuff(Kombucha);
+					xSemaphoreGive(lcdSem);
+					//UART_Print("cookTask lcdSem Give(whatCourse == 4)!\r\n");
+				break;
+				}
+			}
+		}
+		vTaskDelay(500);
+	}
+}
+```
+
+&nbsp;`cookTask`에서는 `copyTask`에서 Critical Section으로 복사한 데이터를 읽어와서, 손님이 변경한 대체정보를 읽어와 Critical Section의 정보를 수정합니다. <br/>
+이는 `copyTask`가 먼저 실행되고 나서, `copyTask`가 `spiSem`을 Take하고 `cookSem`을 Give하여 `copyTask`가 다시 실행될 수 없음을 이용하여, Critical Section으로의 접근을 막습니다. <br/> 
+따라서, `cookTask`가 Critical Section에 접근할 수 있게 됩니다.  <br/>
+접근하여 작업을 수행한 뒤에는 `lcdSem`을 Give함으로, `lcdTask`의 동작이 이루어지게 합니다. <br/>
+또한, 남은 재료의 갯수를 Serial Monitor로 띄울 수 있게 합니다. <br/>
+
+``` c
+...
+void lcdTask(void *argument)
+{
+	while(1)
+	{
+		if (!startSig)
+		{
+			lcd_clear();
+			lcd_put_cur(0, 0);
+			lcd_send_string("Seaweed");
+			vTaskDelay(1000);
+			lcd_clear();
+			lcd_put_cur(0, 0);
+			lcd_send_string("Potato");
+			vTaskDelay(1000);
+			lcd_clear();
+			lcd_put_cur(0, 0);
+			lcd_send_string("SalmonRoe");
+			vTaskDelay(1000);
+			lcd_clear();
+			lcd_put_cur(0, 0);
+			lcd_send_string("Deodeok");
+			vTaskDelay(1000);
+			lcd_clear();
+			lcd_put_cur(0, 0);
+			lcd_send_string("Radish");
+			vTaskDelay(1000);
+			lcd_put_cur(0, 0);
+			lcd_send_string("RedCabbage");
+			vTaskDelay(1000);
+		}
+		else
+...
+...
+			case 4 :
+				if(xSemaphoreTake(lcdSem, portMAX_DELAY) == pdTRUE)
+				{
+					if (lcdState)
+					{
+						//UART_Print("lcdTask lcdSem Take(whatCourse == 4)!\r\n");
+						for(int i = 0; i < 4; i ++)
+							memcpy(&arrCourseTime[i], &userData[i].courseData[0][1], 1);
+						maxIndex = findMaxIndex(arrCourseTime, 4);
+						lcdState = false;
+						xTimerStart(userTimerHandler, 0);
+					}
+				}
+				break;
+			}
+		}
+		vTaskDelay(500);
+	}
+}
+...
+```
+
+&nbsp;`lcdTask`의 작업은 손님의 코스변경정보를 받지 않았을 시에는 해당 요리에 필요한 재료정보를 직원들에게 보여주는 용도로 사용합니다. <br/>
+손님의 코스변경정보를 받았을 시에는 `cookTask`에서 가공된 Critical Section의 정보를 받아 만드는데 걸리는 시간이 변경되었을 것입니다. <br/>
+`cookTask`가 실행되면면 `lcdSem`을 Give하여 Critical Section에 접근하여 새로 복사를 하여 변경된 나오는데 걸리는 시간을 LCD에 카운트 다운을 S/W Timer로 실행하게 됩니다. <br/>
+
+``` c
+...
+void updateUserTimer (TimerHandle_t xTimer)
+{
+	//UART_Print("Timer Start!\r\n");
+	uint8_t temp = 0;
+	lcd_clear();
+	switch (whatCourse)
+	{
+	case 1 :
+		//UART_Print("SUB1 Course Timer Start!\r\n");
+		switch (maxIndex1)
+		{
+		case 0 :
+			if (arrCourseTime1[maxIndex1] > 0)
+			{
+				temp = arrCourseTime1[maxIndex1];
+				lcd_put_cur(0, 0);
+				formatTime(arrCourseTime1[0], timeStr1);
+				lcd_send_string(timeStr1);
+				arrCourseTime1[maxIndex1] --;
+			}
+			if (temp <= arrCourseTime1[1] && arrCourseTime1[1] > 0)
+			{
+				lcd_put_cur(0, 8);
+				formatTime(arrCourseTime1[1], timeStr2);
+				lcd_send_string(timeStr2);
+				arrCourseTime1[1] --;
+			}
+			if (temp <= arrCourseTime1[2] && arrCourseTime1[2] > 0)
+			{
+				lcd_put_cur(1, 0);
+				formatTime(arrCourseTime1[2], timeStr3);
+				lcd_send_string(timeStr3);
+				arrCourseTime1[2] --;
+			}
+			if (temp <= arrCourseTime1[3] && arrCourseTime1[3] > 0)
+			{
+				lcd_put_cur(1, 8);
+				formatTime(arrCourseTime1[3], timeStr4);
+				lcd_send_string(timeStr4);
+				arrCourseTime1[3] --;
+			}
+			break;
+		case 1 :
+...
+	default :
+		//UART_Print("Appetizer or Desert Course Timer Start!\r\n");
+		lcd_clear();
+		lcd_put_cur(0, 0);
+		formatTime(arrCourseTime[0], timeStr1);
+		lcd_send_string(timeStr1);
+		lcd_put_cur(0, 8);
+		formatTime(arrCourseTime[1], timeStr2);
+		lcd_send_string(timeStr2);
+		lcd_put_cur(1, 0);
+		formatTime(arrCourseTime[2], timeStr3);
+		lcd_send_string(timeStr3);
+		lcd_put_cur(1, 8);
+		formatTime(arrCourseTime[3], timeStr4);
+		lcd_send_string(timeStr4);
+		for (int i = 0; i < 4; i ++)
+			arrCourseTime[i]--;
+		if (arrCourseTime[0] == 0 && arrCourseTime[1] == 0 && arrCourseTime[2] == 0 && arrCourseTime[3] == 0)
+		{
+			lcd_clear();
+			lcd_put_cur(0, 0);
+			lcd_send_string("Course Finish!");
+			buzzerSig = true;
+			xSemaphoreGive(lcdSem);
+			UART_Print("S/W Timer lcdSem Give!\r\n");
+			xTimerStop(userTimerHandler, 0);
+		}
+		break;
+	}
+}
+...
+```
+
+&nbsp;S/W Timer의 CallBack 함수입니다. <br/>
+이는 타이머를 띄우는 용도로 각각의 손님 4명의 고른음식이 다를테니 LCD를 4등분하여 코스 요리를 맞춰서 내보낸다고 가정했을 때, 각각의 손님 4명의 음식이 나오는데 걸리는 시간을 순서대로 띄우는 작업을 합니다. <br/>
+4명의 음식이 나올때, `lcdSem`을 Give함으로서 직원들이 다음 음식에 필요한 재료를 `lcdTask`가 동작하게 하여 띄우게 합니다. <br/>
+
+``` c
+...
+void buzzerTask(void *argument)
+{
+	while(1)
+	{
+		// UART_Print("buzzerTask execution!\r\n");
+		if (buzzerSig)
+		{
+			txData = 0x31;
+			HAL_SPI_Transmit(&hspi1, &txData, sizeof(txData), HAL_MAX_DELAY);
+			//UART_Print("SPI txData transmit to master!\r\n");
+			HAL_GPIO_WritePin(Buzzer_GPIO_Port, Buzzer_Pin, GPIO_PIN_SET);
+			HAL_GPIO_WritePin(LED_GPIO_Port, LED_Pin, GPIO_PIN_SET);
+			vTaskDelay(500);
+			HAL_GPIO_WritePin(Buzzer_GPIO_Port, Buzzer_Pin, GPIO_PIN_RESET);
+			HAL_GPIO_WritePin(LED_GPIO_Port, LED_Pin, GPIO_PIN_RESET);
+			vTaskDelay(500);
+			HAL_GPIO_WritePin(LED_GPIO_Port, LED_Pin, GPIO_PIN_SET);
+			vTaskDelay(500);
+			HAL_GPIO_WritePin(LED_GPIO_Port, LED_Pin, GPIO_PIN_RESET);
+			vTaskDelay(500);
+			HAL_GPIO_WritePin(LED_GPIO_Port, LED_Pin, GPIO_PIN_SET);
+			vTaskDelay(500);
+			HAL_GPIO_WritePin(LED_GPIO_Port, LED_Pin, GPIO_PIN_RESET);
+			vTaskDelay(500);
+			txData = 0x30;
+			if (whatCourse >= 4)
+			{
+				whatCourse = 0;
+				startSig = false;
+				dataInit();
+			}
+			buzzerSig = !buzzerSig;
+		}
+		vTaskDelay(500);
+	}
+}
+...
+```
+
+&nbsp;buzzerTask에서는 각 코스요리가 나왔다는 신호를 보내기 위한 작업을 합니다. <br/>
+이는 Buzzer와 LED를 동작시키게 합니다. <br/>
+buzzerTask에서 사용하는 Critical Section은 없습니다. <br/>
+따라서, buzzerSig로 실행되게 합니다. <br/>
+또한, STM2로 데이터를 보냄으로 음식이 나왔다는 신호를 알려줍니다. <br/>
+
+### 5-2. 코스 사진 출력 Display(STM32)
+&nbsp;ST7789 Driver를 사용하기 위한 라이브러리 파일을 사용했습니다. <br/>
+라이브러리 파일은 다음과 같이 Github를 참고하여 사용하였습니다. ([라이브러리 Reference](https://github.com/Floyd-Fish/ST7789-STM32.git))
+
+<p align="center" style="margin:20px 0;">
+  <img width="60%" alt="ST7789 Library Git Source" src="https://github.com/user-attachments/assets/c2684c85-5b05-4720-b207-c39ef9429597" />
+</p>
+
+``` c
+#include "st7789.h"
+
+#ifdef USE_DMA
+#include <string.h>
+uint16_t DMA_MIN_SIZE = 16;
+/* If you're using DMA, then u need a "framebuffer" to store datas to be displayed.
+ * If your MCU don't have enough RAM, please avoid using DMA(or set 5 to 1).
+ * And if your MCU have enough RAM(even larger than full-frame size),
+ * Then you can specify the framebuffer size to the full resolution below.
+ */
+ #define HOR_LEN 	1	//	Also mind the resolution of your screen!
+uint8_t disp_buf[ST7789_WIDTH * HOR_LEN];
+#endif
+
+/**
+ * @brief Write command to ST7789 controller
+ * @param cmd -> command to write
+ * @return none
+ */
+static void ST7789_WriteCommand(uint8_t cmd)
+{
+	ST7789_Select();
+	ST7789_DC_Clr();
+	HAL_SPI_Transmit(&ST7789_SPI_PORT, &cmd, sizeof(cmd), HAL_MAX_DELAY);
+	ST7789_UnSelect();
+}
+
+/**
+ * @brief Write data to ST7789 controller
+ * @param buff -> pointer of data buffer
+ * @param buff_size -> size of the data buffer
+ * @return none
+ */
+...
+```
+
+``` c
+...
+#ifndef __ST7789_H
+#define __ST7789_H
+
+#include "fonts.h"
+#include "main.h"
+
+/* choose a Hardware SPI port to use. */
+#define ST7789_SPI_PORT hspi1
+extern SPI_HandleTypeDef ST7789_SPI_PORT;
+
+/* choose whether use DMA or not */
+// #define USE_DMA
+
+/* If u need CS control, comment below*/
+// #define CFG_NO_CS
+
+/* Pin connection*/
+#define ST7789_RST_PORT GPIOA
+#define ST7789_RST_PIN  GPIO_PIN_1
+#define ST7789_DC_PORT  GPIOA
+#define ST7789_DC_PIN   GPIO_PIN_2
+
+#ifndef CFG_NO_CS
+#define ST7789_CS_PORT  GPIOC
+#define ST7789_CS_PIN   GPIO_PIN_5
+#endif
+...
+```
+
+&nbsp;위와같이 `st7789.c`와 `st7789.h`를 사용하였습니다. <br/>
+음식에 대한 사진을 출력해야 하기 때문에, 라이브러리에서 다음과 같은 함수를 사용합니다. <br/>
+
+```
