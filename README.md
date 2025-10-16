@@ -5,19 +5,19 @@
 ## Index ⭐
  - [1. 프로젝트 목표](#1-프로젝트-목표)
  - [2. 아이디어 구현](#2-아이디어-구현)
-   - [2-1. Information(STM32)](#2-1-InformationSTM32)
-   - [2-2. 객실(STM32)](#22-객실stm32)
-   - [2-3. 주방(STM32)](#23-주방stm32)
+   - [2-1. Information(STM32)](#2-1-informationstm32)
+   - [2-2. 객실(STM32)](#2-2-객실stm32)
+   - [2-3. 주방(STM32)](#2-3-주방stm32)
  - [3. 회로](#3-회로)
-   - [3-1. Information(STM32)](#31-informationstm32)
-   - [3-2. 객실(STM32)](#32-객실stm32)
-   - [3-3. 주방(STM32)](#33-주방stm32)
-   - [3-4. 코스 사진 출력 Display(STM32)](#34-코스-사진-출력-displaystm32)
-   - [3-5. 전체 회로도](#35-전체-회로도)
+   - [3-1. Information(STM32)](#3-1-informationstm32)
+   - [3-2. 객실(STM32)](#3-2-객실stm32)
+   - [3-3. 주방(STM32)](#3-3-주방stm32)
+   - [3-4. 코스 사진 출력 Display(STM32)](#3-4-코스-사진-출력-displaystm32)
+   - [3-5. 전체 회로도](#3-5-전체-회로도)
  - [4. SPI 4-wire Interface TFT IPS LCD모듈(ST7789)](#4-SPI-4wire-interface-tft-ips-lcd모듈st7789)
  - [5. 보드별 코드 및 통신 분석]
-   - [5-1. 주방(STM32)](#51-주방stm32)
-   - [5-2. 코스 사진 출력 Display(STM32)](#52-코스-사진-출력-displaystm32)
+   - [5-1. 주방(STM32)](#5-1-주방stm32)
+   - [5-2. 코스 사진 출력 Display(STM32)](#5-2-코스-사진-출력-displaystm32)
  - [6. 시연영상]
 
 ## 1. 프로젝트 목표
