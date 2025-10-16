@@ -212,7 +212,7 @@
   
 ## 4. SPI 4-wire Interface TFT IPS LCD모듈(ST7789)
 
-### - 사용 이유
+### 사용 이유
 &nbsp;기존의 제공받은 OLED로 손님들이 대접받는 코스별 요리의 사진을 표현하고자 한계가 있어, 손님들에게 코스 요리에 대한 정보를 제공하고자 SPI 4-wire Interface 통신을 지원하는 TFT IPS LCD모듈을 사용하게 되었습니다. <br/>
 
 <table>
@@ -236,7 +236,7 @@
       </table>
 </table>
 
-### - SPI Timing Digaram
+### SPI Timing Digaram
 
 <p align="center" style="margin: 20px 0;">
   <img width="49%" alt="Serial Interface Characteristics" src="https://github.com/user-attachments/assets/6bdc68a2-4a06-49f2-916e-b890cab54dac" />
@@ -268,7 +268,7 @@
 > **5. 보드별 코드 및 통신 분석에서는 해당 보드에 대한 설명만 있습니다.** <br/>
 > **또한, Source 코드도 해당 보드에 대한 코드만 있습니다.** <br/>
 
-#### - Task 간단 정보
+#### Task 간단 정보
 &nbsp;해당 STM32에서의 FreeRTOS의 Task는 다음과 같습니다. <br/>
 
 | **Task Priority** | **Task** | **Execution** |
@@ -278,7 +278,7 @@
 | 1 | `lcdTask` | 재료 및 타이머 LCD 동작 |
 | 1 | `buzzerTask` | 요리 완료 후 동작 |
 
-#### - Critical Section
+#### Critical Section
 &nbsp;공유자원은 다음과 같습니다.
 
 ``` c:main.c
@@ -294,7 +294,7 @@ typedef struct {
 &nbsp;위는 구조체 배열로 식당의 코스별 요리 정보와 주방에서 그 코스에 만드는데 걸리는 시간이 담겨있습니다. <br/>
 위 구조체 배열은 3개의 Task가 접근을 하며, Critical Section입니다. <br/>
 
-#### - 동작 Flow
+#### 동작 Flow
 
 ``` c:main.c
 ...
