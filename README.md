@@ -775,4 +775,134 @@ extern SPI_HandleTypeDef ST7789_SPI_PORT;
 &nbsp;위와같이 `st7789.c`와 `st7789.h`를 사용하였습니다. <br/>
 음식에 대한 사진을 출력해야 하기 때문에, 라이브러리에서 다음과 같은 함수를 사용합니다. <br/>
 
+``` c
+...
+void ST7789_DrawImage(uint16_t x, uint16_t y, uint16_t w, uint16_t h, const uint16_t *data)
+{
+	if ((x >= ST7789_WIDTH) || (y >= ST7789_HEIGHT))
+		return;
+	if ((x + w - 1) >= ST7789_WIDTH)
+		return;
+	if ((y + h - 1) >= ST7789_HEIGHT)
+		return;
+
+	ST7789_Select();
+	ST7789_SetAddressWindow(x, y, x + w - 1, y + h - 1);
+	ST7789_WriteData((uint8_t *)data, sizeof(uint16_t) * w * h);
+	ST7789_UnSelect();
+}
+...
 ```
+
+&nbsp;위 함수의 사용에 큰 제약이 있었습니다. <br/>
+바로, `const uint16_t *data`에 들어갈 data는 사진파일을 RGB565 형식으로 변환한 뒤, 이를 2차원 배열의 .c파일을 Src에 넣어 다음과 같이 선언하여 함수를 출력해보면 Flash가 부족하다는 이유였습니다. <br/>
+그 이유를 찾아보면, 다음과 같았습니다. <br/>
+
+<p align="center" style="margin: 20px 0;">
+	<img width="49%" alt="STMF103RB Spec 1" src="https://github.com/user-attachments/assets/ee4785c5-38b2-4b4f-9d24-10d8abf00138" />
+	<img width="49%" alt="STMF103RB Spec 2" src="https://github.com/user-attachments/assets/823809f2-39ed-4e66-8f29-b0049cc794ff" />
+</p>
+
+위와같이, 우리가 사용하는 `STM32Nucleo-F103RB`의 Flash Memory는 128kB이여서, 사진을 여러장 띄울 수 없었습니다. <br/>
+
+<p align="center" style="margin: 20px 0;">
+	<img width="49%" alt="STM32F407VGT6 Spec 1" src="https://github.com/user-attachments/assets/53969553-92fa-4a2a-bebb-2ec10972a427" />
+	<img width="49%" alt="STM32F407VGT6 Spec 2" src="https://github.com/user-attachments/assets/525392be-2d25-4b03-a6bd-9ca4f4d50623" />
+</p>
+
+따라서, 위와같이 1MByte Flash Memory를 지원하는 `STM32F407VGT6`보드를 사용하여, 출력하게 하였습니다. <br/>
+
+``` c
+...
+/* USER CODE BEGIN Header */
+/**
+  ******************************************************************************
+  * @file           : main.c
+  * @brief          : Main program body
+  ******************************************************************************
+  * @attention
+  *
+  * Copyright (c) 2024 STMicroelectronics.
+  * All rights reserved.
+  *
+  * This software is licensed under terms that can be found in the LICENSE file
+  * in the root directory of this software component.
+  * If no LICENSE file comes with this software, it is provided AS-IS.
+  *
+  ******************************************************************************
+  */
+/* USER CODE END Header */
+/* Includes ------------------------------------------------------------------*/
+#include "main.h"
+
+/* Private includes ----------------------------------------------------------*/
+/* USER CODE BEGIN Includes */
+#include "st7789.h"
+#include "image.h"
+/* USER CODE END Includes */
+...
+...
+  /* USER CODE BEGIN WHILE */
+  while (1)
+  {
+	  ST7789_DrawImage(0, 40, 240, 240, (uint16_t *)SmallBites);
+	  HAL_Delay(1000);
+	  ST7789_Init();
+	  ST7789_DrawImage(0, 40, 240, 240, (uint16_t *)AlmondWithCavior);
+	  HAL_Delay(1000);
+	  ST7789_Init();
+	  ST7789_DrawImage(0, 40, 240, 240, (uint16_t *)SnowCrabAndPickledChrysanthemum);
+	  HAL_Delay(1000);
+	  ST7789_Init();
+	  ST7789_DrawImage(0, 40, 240, 240, (uint16_t *)BurdockTarteTatinWithSkinJuice);
+	  HAL_Delay(1000);
+	  ST7789_Init();
+	  ST7789_DrawImage(0, 40, 240, 240, (uint16_t *)EmberToastedAcornNoodle);
+	  HAL_Delay(1000);
+	  ST7789_Init();
+	  ST7789_DrawImage(0, 40, 240, 240, (uint16_t *)HearthOvenGrilledHanwoo);
+	  HAL_Delay(1000);
+	  ST7789_Init();
+	  ST7789_DrawImage(0, 40, 240, 240, (uint16_t *)TilefishMustardBrassica);
+	  HAL_Delay(1000);
+	  ST7789_Init();
+	  ST7789_DrawImage(0, 40, 240, 240, (uint16_t *)SmallSweet1);
+	  HAL_Delay(1000);
+	  ST7789_Init();
+	  ST7789_DrawImage(0, 40, 240, 240, (uint16_t *)anSungJae);
+	  HAL_Delay(3000);
+	  ST7789_Init();
+    /* USER CODE END WHILE */
+
+    /* USER CODE BEGIN 3 */
+  }
+  /* USER CODE END 3 */
+}
+```
+
+&nbsp;`Main.c`의 코드입니다.
+
+<table align="center" style="width:100%; table-layout:fixed; border-collapse:collapse;">
+  <tr>
+    <!-- 왼쪽: 훨씬 넓게 -->
+    <td align="center" style="width:50%;">
+      <img width="98%" src="https://github.com/user-attachments/assets/0aa63b90-3400-4f1d-bd0b-5a363bd0fc6d" alt="File List"/>
+    </td>
+    <!-- 가운데 -->
+    <td align="center" style="width:25%;">
+      <img width="90%" src="https://github.com/user-attachments/assets/80dfefc0-eb73-4db0-beb2-479975c49db7" alt="anSungJae.c"/>
+    </td>
+    <!-- 오른쪽 -->
+    <td align="center" style="width:25%;">
+      <img width="90%" src="https://github.com/user-attachments/assets/263ae3a3-99bd-4f84-9803-5eaef9b28721" alt="image.h"/>
+    </td>
+  </tr>
+  <!-- 캡션 -->
+  <tr>
+    <td align="center"><strong><code>File List</code></strong></td>
+    <td align="center"><strong><code>anSungJae.c</code></strong></td>
+    <td align="center"><strong><code>image.h</code></strong></td>
+  </tr>
+</table>
+
+
