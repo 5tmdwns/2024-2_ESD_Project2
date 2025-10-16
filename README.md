@@ -9,9 +9,11 @@
    - [2-2. 객실(STM32)](#22-객실STM32)
    - [2-3. 주방(STM32)](#23-주방STM32)
  - [3. 회로](#3-회로)
-   - [3-1. 주방(STM32)](#31-주방STM32)
-   - [3-2. 코스 사진 출력 Display(STM32)](#32 코스 사진 출력 DisplaySTM32)
-   - [3-3. 전체 회로도](#33-전체-회로도)
+   - [3-1. Information(STM32)](#31-InformationSTM32)
+   - [3-2. 객실(STM32)](#32-객실STM32)
+   - [3-3. 주방(STM32)](#33-주방STM32)
+   - [3-4. 코스 사진 출력 Display(STM32)](#34-코스-사진-출력-DisplaySTM32)
+   - [3-5. 전체 회로도](#35-전체-회로도)
  - [4. SPI 4-wire Interface TFT IPS LCD모듈(ST7789)](#4-SPI-4wire-Interface-TFT-IPS-LCD모듈ST7789)
  - [5. 보드별 코드 및 통신 분석]
    - [5-1. 주방(STM32)](#51-주방STM32)
@@ -130,3 +132,77 @@
 </table>
 
 ## 3. 회로
+### 3-1. Information(STM32)
+
+<p align="center" style="margin: 20px 0;">
+  <img width="60%" alt="Information Circuit Image" src="https://github.com/user-attachments/assets/a0d6e0ac-30b2-4ea2-abd5-774e2565c644" />
+</p>
+
+&nbsp;**SPI 통신** <br/>
+- `PA5`: `SPI1_SCK`
+- `PA6`: `SPI1_MISO`
+- `PA7`: `SPI1_MOSI`
+
+### 3-2. 객실(STM32)
+
+<p align="center" style="margin: 20px 0;">
+  <img width="60%" alt="객실 Circuit Image" src="https://github.com/user-attachments/assets/5887c934-c959-41f5-97f4-aca9bde8861e" />
+</p>
+
+
+&nbsp;**SPI 통신** <br/>
+- `PA5`: `SPI1_SCK`
+- `PA6`: `SPI1_MISO`
+- `PA7`: `SPI1_MOSI`
+- `PC4`: `SPI1_SS`
+ 
+### 3-3. 주방(STM32)
+
+<p align="center" style="margin: 20px 0;">
+  <img width="60%" alt="주방 Circuit Image" src="https://github.com/user-attachments/assets/b6ae1c15-a1fb-46ca-a82c-6fdae070cec8" />
+</p>
+
+&nbsp;**SPI 통신** <br/>
+- `PA5`: `SPI1_SCK`
+- `PA6`: `SPI1_MISO`
+- `PA7`: `SPI1_MOSI`
+- `PC4`: `SPI1_SS`
+ 
+### 3-4. 코스 사진 출력 Display(STM32)
+
+<p align="center" style="margin: 20px 0;">
+  <img width="49%" alt="코스 사진 출력 Display Circuit Image" src="https://github.com/user-attachments/assets/866383f9-3c9d-429f-88c4-53cc21bad8df" />
+  <img width="49%" alt="코스 사진 출력 Display Pin Map Image" src="https://github.com/user-attachments/assets/3d597556-0ef4-4b3c-887e-e9a89d8c5edd" />
+</p>
+
+&nbsp;**4-wire Interface** <br/>
+- `SCL`: `PA5`
+- `SDA`: `PA7`
+- `RES`: `PA1`
+- `DC`: `PA2`
+- `CS`: `PC5`
+- `BLK`: `PB0`
+ 
+### 3-5. 전체 회로도
+
+<p align="center" style="margin: 20px 0;">
+  <img width="60%" alt="전체 회로도 Image" src="https://github.com/user-attachments/assets/e0dcad6b-d163-4360-a4df-b87c74bcf474" />
+</p>
+
+&nbsp;**Information(STM32)** <br/>
+- OLED
+- PIR
+- LCD
+
+&nbsp;**객실(STM32)** <br/>
+- LCD
+- BUTTON
+
+&nbsp;**주방(STM32)** <br/>
+- LCD
+- BUZZER
+- LED
+
+&nbsp;**코스 사진 출력 Display(STM32)** <br/>
+- ST7789 TFT LCD
+  
