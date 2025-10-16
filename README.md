@@ -281,7 +281,7 @@
 #### - Critical Section
 &nbsp;공유자원은 다음과 같습니다.
 
-``` c
+``` c:main.c
 ...
 typedef struct {
 	uint8_t courseData [5][2];
@@ -296,7 +296,7 @@ typedef struct {
 
 #### - 동작 Flow
 
-``` c
+``` c:main.c
 ...
 enum cuisine {
 	SmallBites = 31,
@@ -317,7 +317,7 @@ enum cuisine {
 &nbsp;`enum` 배열로 선언한 각 코스의 이름을 선언하였습니다. <br/>
 기본 에피타이저 - 서브1 - 메인 - 서브2 - 후식순으로 코스가 진행되는데 서브1, 메인, 서브2는 대체가 2가지가 있어 이는 STM2에서 받는 데이터의 정보를 통하여 수정하여 다시 구조체 배열로 `copyTask`로 인해 저장하게 됩니다. <br/>
 
-``` c
+``` c:main.c
 ...
 void dataInit()
 {
@@ -341,7 +341,7 @@ void dataInit()
 
 &nbsp;처음 Critical Section을 `enum`의 기본 코스로 저장하는 과정이다. 이는 `int main`안에(While 밖)에 선언함으로써, 한번 초기화하게 합니다. <br/>
 
-``` c
+``` c:main.c
 ...
 HAL_SPI_Receive_IT(&hspi1, rxBuffer, sizeof(rxBuffer));
   /* USER CODE END 2 */
@@ -362,7 +362,7 @@ HAL_SPI_Receive_IT(&hspi1, rxBuffer, sizeof(rxBuffer));
 &nbsp;인터럽트 수신대기와 BinarySemaphore의 3가지 선언입니다. <br/>
 이는 주방에서 행해지는 작업이 순차적으로 진행됨으로, Semaphore로 3가지 테스크의 시행을 순차적으로 진행시키기 위해 선언하였습니다. <br/>
 
-``` c
+``` c:main.c
 ...
   /* start timers, add new ones, ... */
   userTimerHandler = xTimerCreate("userTimer", pdMS_TO_TICKS(1000), pdTRUE, NULL, updateUserTimer);
@@ -388,7 +388,7 @@ HAL_SPI_Receive_IT(&hspi1, rxBuffer, sizeof(rxBuffer));
 &nbsp;주방에서 다음 요리가 나오기 위한 시간을 LCD로 출력하기 위한 `S/W Timer Handler`를 선언하였다. <br/>
 이는 Priode Timer로 `1000pdMS_TICK`간격으로 `xTimerStop`을 선언하기 전까지 시행된다. <br/>
 
-``` c
+``` c:main.c
 ...
 void HAL_SPI_RxCpltCallback(SPI_HandleTypeDef *hspi)
 {
@@ -412,7 +412,7 @@ void HAL_SPI_RxCpltCallback(SPI_HandleTypeDef *hspi)
 &nbsp;SPI Interrupt 수신으로 버퍼에 데이터를 저장하는 과정이다. 여기서 `‘0’`을 하는 이유는 전달 받는 데이터가 아스키코드로 `‘0’`, `‘1’`, `‘2’`를 각 배열에 전달을 받기 때문에, 이를 현 코드에서의 데이터로 가공시키기 위함입니다. <br/>
 또한, `spiSem`을 Give함으로 `copyTask`가 동작하도록 합니다. <br/>
 
-``` c
+``` c:main.c
 ...
 void copyTask(void *argument)
 {
@@ -453,7 +453,7 @@ void copyTask(void *argument)
 `copyTask`가 진행되었을 시, `cookSem`을 Give함으로써, 다음 순위인 `cookTask`가 실행되도록 합니다. <br/>
 마찬가지로, `spiSem`의 Take가 없을 시, `cookTask`도 실행되지 않습니다. <br/>
 
-``` c
+``` c:main.c
 ...
 void cookTask(void *argument)
 {
@@ -505,7 +505,7 @@ void cookTask(void *argument)
 접근하여 작업을 수행한 뒤에는 `lcdSem`을 Give함으로, `lcdTask`의 동작이 이루어지게 합니다. <br/>
 또한, 남은 재료의 갯수를 Serial Monitor로 띄울 수 있게 합니다. <br/>
 
-``` c
+``` c:main.c
 ...
 void lcdTask(void *argument)
 {
@@ -566,7 +566,7 @@ void lcdTask(void *argument)
 손님의 코스변경정보를 받았을 시에는 `cookTask`에서 가공된 Critical Section의 정보를 받아 만드는데 걸리는 시간이 변경되었을 것입니다. <br/>
 `cookTask`가 실행되면면 `lcdSem`을 Give하여 Critical Section에 접근하여 새로 복사를 하여 변경된 나오는데 걸리는 시간을 LCD에 카운트 다운을 S/W Timer로 실행하게 됩니다. <br/>
 
-``` c
+``` c:main.c
 ...
 void updateUserTimer (TimerHandle_t xTimer)
 {
@@ -649,7 +649,7 @@ void updateUserTimer (TimerHandle_t xTimer)
 이는 타이머를 띄우는 용도로 각각의 손님 4명의 고른음식이 다를테니 LCD를 4등분하여 코스 요리를 맞춰서 내보낸다고 가정했을 때, 각각의 손님 4명의 음식이 나오는데 걸리는 시간을 순서대로 띄우는 작업을 합니다. <br/>
 4명의 음식이 나올때, `lcdSem`을 Give함으로서 직원들이 다음 음식에 필요한 재료를 `lcdTask`가 동작하게 하여 띄우게 합니다. <br/>
 
-``` c
+``` c:main.c
 ...
 void buzzerTask(void *argument)
 {
@@ -704,7 +704,7 @@ buzzerTask에서 사용하는 Critical Section은 없습니다. <br/>
   <img width="90%" alt="ST7789 Library Git Source" src="https://github.com/user-attachments/assets/c2684c85-5b05-4720-b207-c39ef9429597" />
 </p>
 
-``` c
+``` c:st7789.c
 #include "st7789.h"
 
 #ifdef USE_DMA
@@ -741,7 +741,7 @@ static void ST7789_WriteCommand(uint8_t cmd)
 ...
 ```
 
-``` c
+``` c:st7789.h
 ...
 #ifndef __ST7789_H
 #define __ST7789_H
@@ -775,7 +775,7 @@ extern SPI_HandleTypeDef ST7789_SPI_PORT;
 &nbsp;위와같이 `st7789.c`와 `st7789.h`를 사용하였습니다. <br/>
 음식에 대한 사진을 출력해야 하기 때문에, 라이브러리에서 다음과 같은 함수를 사용합니다. <br/>
 
-``` c
+``` c:st7789.c
 ...
 void ST7789_DrawImage(uint16_t x, uint16_t y, uint16_t w, uint16_t h, const uint16_t *data)
 {
@@ -812,7 +812,7 @@ void ST7789_DrawImage(uint16_t x, uint16_t y, uint16_t w, uint16_t h, const uint
 
 따라서, 위와같이 1MByte Flash Memory를 지원하는 `STM32F407VGT6`보드를 사용하여, 출력하게 하였습니다. <br/>
 
-``` c
+``` c:main.c
 ...
 /* USER CODE BEGIN Header */
 /**
@@ -880,8 +880,6 @@ void ST7789_DrawImage(uint16_t x, uint16_t y, uint16_t w, uint16_t h, const uint
 }
 ```
 
-&nbsp;`Main.c`의 코드입니다.
-
 <table align="center" style="width:100%; table-layout:fixed; border-collapse:collapse;">
   <tr>
     <!-- 왼쪽: 훨씬 넓게 -->
@@ -905,4 +903,58 @@ void ST7789_DrawImage(uint16_t x, uint16_t y, uint16_t w, uint16_t h, const uint
   </tr>
 </table>
 
+&nbsp;이는 단순히 손님들에게 코스요리에 대한 사진을 시각화함으로 FreeRTOS를 사용하지 않았습니다. <br/>
+또한, 위와같은 파일들은 `image.h`에 선언함으로 `extern`하여 사용하였고, 위처럼 배열로 변경하는 작업은 Python Script를 사용하여 기존이미지를 240x240으로 변경하여, RGB565포맷으로 변경한뒤 리틀앤디안으로 저장하기 위하여 상위바이트와 하위바이트를 변경한뒤 .c 2차원배열파일로 저장하여 사용하였습니다. <br/>
 
+``` python:imageToAndianRgb565.py
+from PIL import Image
+
+resize_to_fixed_size = True 
+fixed_width, fixed_height = 240, 240  
+
+def swap_bytes(rgb565):
+    high_byte = (rgb565 >> 8) & 0xFF  
+    low_byte = rgb565 & 0xFF          
+    return (low_byte << 8) | high_byte  
+
+image_path = "파일이름.jpeg"  
+output_file = "파일이름.c"   
+
+image = Image.open(image_path)
+
+if resize_to_fixed_size:
+    image = image.resize((fixed_width, fixed_height), Image.Resampling.LANCZOS)
+    width, height = fixed_width, fixed_height  
+else:
+    width, height = image.size  
+
+rgb565_data = []
+
+
+for y in range(height):
+    row = [] 
+    for x in range(width):
+        r, g, b = image.getpixel((x, y))[:3]  
+        rgb565 = ((r & 0xF8) << 8) | ((g & 0xFC) << 3) | (b >> 3)
+        swapped_rgb565 = swap_bytes(rgb565)
+        row.append(swapped_rgb565) 
+    rgb565_data.append(row)  
+
+with open(output_file, "w") as file:
+    file.write("#include \"image.h\"\n\n")
+    file.write(f"const uint16_t 파일이름[{height}][{width}] = {{\n")
+    for row in rgb565_data:
+        file.write("    {")
+        file.write(",".join(f"0x{value:04X}" for value in row))
+        file.write("},\n")
+    file.write("};\n")
+
+print(f" {output_file} save!")
+```
+
+## 6. 시연영상
+### [입장](#https://drive.google.com/file/d/1NTCRfR3sXfr2LmJT8r22jeOMRN_iNV_2/view?usp=sharing)
+### [QR서버홈](#https://drive.google.com/file/d/1gZuGmhyukw768nXnn1dyceuLz3geT0pV/view?usp=sharing)
+### [QR서버메뉴](#https://drive.google.com/file/d/1QcCQY33HyL5IlGx7LmlhcJpJos2wTtdM/view?usp=sharing_
+### [주방 타이머 1](#https://drive.google.com/file/d/1d9EcNRx9hgoyCosS8EqPOA8HVtiw9l-P/view?usp=sharing)
+### [주방 타이머 2](#https://drive.google.com/file/d/1aASdzvGTf2WcpOVzPhBbp_Wvt3CHuEjN/view?usp=sharing)
