@@ -1,5 +1,5 @@
 <p align="center">
-  <h1 align="center">FreeRTOS 기반 식당관리 시스템(모순 MOSOON)✨</h1>
+  <h1 align="center">FreeRTOS 기반 식당 관리 시스템(모순 MOSOON)✨</h1>
 	<p align="center">
 		<img width="20%" alt="시연 Gif" src="https://github.com/user-attachments/assets/ea075d73-4d64-4993-9096-0e3df431c186" />
 	</p>
