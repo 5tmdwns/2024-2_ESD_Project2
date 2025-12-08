@@ -21,7 +21,7 @@
    - [3-3. 주방(STM32)](#3-3-주방stm32)
    - [3-4. 코스 사진 출력 Display(STM32)](#3-4-코스-사진-출력-displaystm32)
    - [3-5. 전체 회로도](#3-5-전체-회로도)
- - [4. SPI 4-wire Interface TFT IPS LCD모듈(ST7789)](#4-SPI-4wire-interface-tft-ips-lcd모듈st7789)
+ - [4. SPI 4-wire Interface TFT IPS LCD모듈(ST7789)](#4-SPI-4-wire-interface-tft-ips-lcd모듈st7789)
  - [5. 보드별 코드 및 통신 분석](#5-보드별-코드-및-통신-분석)
    - [5-1. 주방(STM32)](#5-1-주방stm32)
    - [5-2. 코스 사진 출력 Display(STM32)](#5-2-코스-사진-출력-displaystm32)
